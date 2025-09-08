@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alteração de Forma de Pagamento</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: #f5f5f5;
+    }
+    .card {
+      background-color: #2c2c3e;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+      padding: 30px;
+      max-width: 720px;
+      margin: 50px auto;
+    }
+    .form-label {
+      color: #ddd;
+    }
+    .form-control,
+    .form-select {
+      background-color: #3b3b50;
+      border: 1px solid #555;
+      color: #fff;
+    }
+    .form-control::placeholder {
+      color: #aaa;
+    }
+    h3, h5 {
+      color: #f5f5f5;
+    }
+    .btn-primary {
+      background-color: #4e97fd;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #367ef6;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3 class="mb-4 text-center">Alteração de Forma de Pagamento</h3>
+    <form method="post" action="/gerar">
+
+      <!-- ✅ CHECKBOXES (CORRIGIDOS) -->
+      <div class="mb-3">
+        <label class="form-label d-block">Opções</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="opcoes" value="Emissao" id="emissao">
+          <label class="form-check-label text-light" for="emissao">Emissão</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="opcoes" value="Processos Operacionais" id="processos">
+          <label class="form-check-label text-light" for="processos">Processos Operacionais</label>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Nome do Segurado</label>
+        <input type="text" name="nome" class="form-control" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">CPF</label>
+        <input type="text" name="cpf" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Número da Apólice</label>
+        <input type="text" name="apolice" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Life Planner</label>
+        <select name="lp" class="form-select" required>
+          <option value="">Selecione...</option>
+          <optgroup label="Black Belt">
+            {% for nome in black_belts %}
+            <option value="{{ nome }}">{{ nome }}</option>
+            {% endfor %}
+          </optgroup>
+          <optgroup label="Fenix">
+            {% for nome in fenix %}
+            <option value="{{ nome }}">{{ nome }}</option>
+            {% endfor %}
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Forma de Pagamento</label>
+        <select name="pagamento" class="form-select" id="pagamento" required onchange="mostrarCampos()">
+          <option>Selecione...</option>
+          <option value="Cartão de Crédito">Cartão de Crédito</option>
+          <option value="Conta para Débito">Conta para Débito</option>
+          <option value="Boleto">Boleto</option>
+        </select>
+      </div>
+
+      <div id="cartao" class="form-section hidden">
+        <h5>Cartão de Crédito</h5>
+        <div class="mb-2">
+          <input type="text" name="numero" placeholder="Número do Cartão" class="form-control" />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="validade" placeholder="MM/AAAA" class="form-control" />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="titular" placeholder="Titular" class="form-control" />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="adm" placeholder="Administradora" class="form-control" />
+        </div>
+      </div>
+
+      <div id="debito" class="form-section hidden">
+        <h5>Conta para Débito</h5>
+        <div class="mb-2">
+          <select name="banco" class="form-select" id="banco" onchange="preencherCodigoBanco()">
+            <option value="">Selecione o Banco</option>
+            <option value="Banco do Brasil">Banco do Brasil</option>
+            <option value="Itaú">Itaú</option>
+            <option value="Bradesco">Bradesco</option>
+            <option value="Santander">Santander</option>
+            <option value="XP">XP</option>
+            <option value="C6">C6</option>
+            <option value="Caixa">Caixa</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <input type="text" name="nbanco" id="nbanco" placeholder="Número do Banco" class="form-control" readonly />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="agencia" placeholder="Agência" class="form-control" />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="conta" placeholder="Conta" class="form-control" />
+        </div>
+        <div class="mb-2">
+          <input type="text" name="correntista" placeholder="Nome do Correntista" class="form-control" />
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-4">Gerar PDF</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function mostrarCampos() {
+      const tipo = document.getElementById('pagamento').value;
+      document.getElementById('cartao').classList.add('hidden');
+      document.getElementById('debito').classList.add('hidden');
+
+      if (tipo === 'Cartão de Crédito') {
+        document.getElementById('cartao').classList.remove('hidden');
+      } else if (tipo === 'Conta para Débito') {
+        document.getElementById('debito').classList.remove('hidden');
+      }
+    }
+
+    function preencherCodigoBanco() {
+      const banco = document.getElementById("banco").value;
+      const inputCodigo = document.getElementById("nbanco");
+      const codigos = {
+        "Banco do Brasil": "001",
+        "Itaú": "341",
+        "Bradesco": "237",
+        "Santander": "033",
+        "XP": "102",
+        "C6": "336",
+        "Caixa": "104"
+      };
+      inputCodigo.value = codigos[banco] || "";
+    }
+  </script>
+</body>
+</html>

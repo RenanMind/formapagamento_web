@@ -1,0 +1,4 @@
+Flask
+pdfrw
+pypdf
+reportlab
