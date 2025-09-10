@@ -34,6 +34,7 @@ LIFE_PLANNERS = {
     "Romulo Oliveira Carvalho Cavalcanti ": {"cpd": "169367", "ponto": "Fenix"},
     "Renan Marques Laterza": {"cpd": "208918", "ponto": "Fenix"},
     "Luiz Felipe da Silva Castro": {"cpd": "154229", "ponto": "Fenix"},
+    "Kaian Raia Pagan": {"cpd": "244939", "ponto": "Fenix"},
 }
 
 LP_CPDS = {nome: dados["cpd"] for nome, dados in LIFE_PLANNERS.items()}
