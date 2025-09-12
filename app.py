@@ -3,11 +3,9 @@ from datetime import datetime
 import os, io
 from pdfrw import PdfReader, PdfWriter, PdfDict, PdfName, PdfObject
 
-
 app = Flask(__name__)
 
 TEMPLATE_PATH = "Template.pdf"
-PASTA_SAIDA = "gerados"
 
 LIFE_PLANNERS = {
     "Luiz Felipe da Silva Martins": {"cpd": "166025", "ponto": "Black Belt"},
@@ -50,7 +48,7 @@ def gerar_data_formatada():
     return f"Rio de Janeiro, {hoje.day} de {meses[hoje.month - 1]} de {hoje.year}"
 
 
-def preencher_pdf(dados, saida_path):
+def preencher_pdf(dados):
     pdf = PdfReader(TEMPLATE_PATH)
     for pagina in pdf.pages:
         if pagina.Annots:
@@ -62,7 +60,11 @@ def preencher_pdf(dados, saida_path):
                         campo.V = PdfName(valor.replace('/', '')) if valor.startswith('/') else PdfObject(f'({valor})')
                         campo.AS = campo.V
                         campo.AP = None
-    PdfWriter().write(saida_path, pdf)
+
+    buffer = io.BytesIO()
+    PdfWriter().write(buffer, pdf)
+    buffer.seek(0)
+    return buffer
 
 
 @app.route("/")
@@ -123,12 +125,11 @@ def gerar():
         dados['Contacorrente com dígito'] = request.form.get("conta", "")
         dados['Nome-do-correntista'] = request.form.get("correntista", "")
 
-    if not os.path.exists(PASTA_SAIDA):
-        os.makedirs(PASTA_SAIDA)
-
-    saida_path = os.path.join(PASTA_SAIDA, f"FormaPagamento_{nome}.pdf")
-    preencher_pdf(dados, saida_path)
-    return send_file(saida_path, as_attachment=True)
+    buffer = preencher_pdf(dados)
+    return send_file(buffer,
+                     as_attachment=True,
+                     download_name=f"FormaPagamento_{nome}.pdf",
+                     mimetype="application/pdf")
 
 
 @app.route("/healthz")
